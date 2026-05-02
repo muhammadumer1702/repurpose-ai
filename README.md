@@ -18,7 +18,7 @@ Repurpose AI helps consultants, coaches, and content creators instantly transfor
 - Fast generation powered by OpenAI
 
 ### Live URL
-[https://muhammadumer1702-repurpose-ai.vercel.app/](https://repurpose--ai.vercel.app/)
+(https://repurpose--ai.vercel.app/)
 
 ### Tech Stack
 - Next.js 15 (App Router)
