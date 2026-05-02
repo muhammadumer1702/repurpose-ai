@@ -17,8 +17,8 @@ Repurpose AI helps consultants, coaches, and content creators instantly transfor
 - Persistent voice profiles
 - Fast generation powered by OpenAI
 
-### Live Demo
-https://muhammadumer1702-repurpose-ai.vercel.app/
+### Live URL
+[https://muhammadumer1702-repurpose-ai.vercel.app/](https://repurpose--ai.vercel.app/)
 
 ### Tech Stack
 - Next.js 15 (App Router)
