@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
@@ -38,20 +37,22 @@ export default async function HomePage() {
           <p className="mx-auto mt-8 max-w-2xl text-pretty text-lg text-muted-foreground sm:text-xl leading-relaxed">
             Stop sounding like an AI. Repurpose AI transforms your webinars, coaching calls, and podcasts into magnetic LinkedIn carousels, threads, and high-converting email sequences.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4">
-            <form action="/login" className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:gap-2 mx-auto">
-              <Input 
-                type="email" 
-                placeholder="Enter your work email" 
-                className="h-12 bg-background/50 backdrop-blur-sm px-4 text-base sm:flex-1"
-                required
-              />
-              <Button size="lg" className="h-12 w-full sm:w-auto shadow-md" type="submit">
-                Join Beta
-                <ArrowRight className="h-4 w-4 ml-2" />
+          <div className="mt-10 flex flex-col items-center justify-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <Button size="lg" className="h-12 w-full sm:w-auto px-8 shadow-md text-base" asChild>
+                <Link href="/signup">
+                  Join Beta
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
               </Button>
-            </form>
-            <div className="mt-4 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+              <Button size="lg" variant="outline" className="h-12 w-full sm:w-auto px-8 text-base bg-background/50 backdrop-blur-sm" asChild>
+                <Link href="/login">
+                  Sign in
+                </Link>
+              </Button>
+            </div>
+            
+            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mt-2">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-primary/80" />
                 <span>No credit card required</span>
@@ -61,6 +62,13 @@ export default async function HomePage() {
                 <span>Cancel anytime</span>
               </div>
             </div>
+
+            <p className="text-sm text-muted-foreground mt-2">
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
       </section>
