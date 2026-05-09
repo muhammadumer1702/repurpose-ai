@@ -1,11 +1,7 @@
 import Link from "next/link";
-import { Mail } from "lucide-react";
 
-import { loginWithPassword, sendMagicLink } from "@/app/actions/auth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { LoginForm } from "./login-form";
 
 type LoginPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -58,77 +54,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
           ) : null}
 
-          <form action={loginWithPassword} className="space-y-4">
-            <input type="hidden" name="next" value={next} />
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@company.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                minLength={6}
-                placeholder="••••••••"
-              />
-            </div>
-            <Button className="w-full" type="submit">
-              Sign in
-            </Button>
-          </form>
-
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center" aria-hidden>
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase tracking-wider">
-              <span className="bg-card px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
-
-          <form action={sendMagicLink} className="space-y-3">
-            <p className="text-center text-sm text-muted-foreground">
-              We&apos;ll email you a secure link — no password needed.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="magic-email" className="sr-only">
-                Email for magic link
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="magic-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  placeholder="you@company.com"
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Button className="w-full" variant="outline" type="submit">
-              Sign in with Magic Link
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-medium text-primary underline-offset-4 hover:underline">
-              Sign up
-            </Link>
-          </p>
+          <LoginForm next={next} />
 
           <p className="text-center text-xs text-muted-foreground">
             <Link href="/" className="underline-offset-4 hover:underline">
