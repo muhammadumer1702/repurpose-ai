@@ -1,10 +1,8 @@
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 
-import { signUpWithPassword } from "@/app/actions/auth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { SignupForm } from "./signup-form";
 
 type SignupPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -42,40 +40,13 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         </CardHeader>
         <CardContent className="space-y-6">
           {error ? (
-            <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <p>{error}</p>
+            </div>
           ) : null}
 
-          <form action={signUpWithPassword} className="space-y-4">
-            <input type="hidden" name="returnTo" value="signup" />
-            <div className="space-y-2">
-              <Label htmlFor="signup-email">Email</Label>
-              <Input
-                id="signup-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="you@company.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
-              <Input
-                id="signup-password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={6}
-                placeholder="At least 6 characters"
-              />
-            </div>
-            <Button className="w-full" type="submit">
-              Create account
-            </Button>
-          </form>
+          <SignupForm />
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}

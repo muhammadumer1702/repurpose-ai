@@ -28,8 +28,22 @@ export async function loginWithPassword(formData: FormData) {
 export async function signUpWithPassword(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
   const returnTo = String(formData.get("returnTo") ?? "login");
   const errorPath = returnTo === "signup" ? "/signup" : "/login";
+
+  if (password.length < 8) {
+    redirect(`${errorPath}?error=${encodeURIComponent("Password must be at least 8 characters long.")}`);
+  }
+
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    redirect(`${errorPath}?error=${encodeURIComponent("Password must contain at least one letter and one number.")}`);
+  }
+
+  if (password !== confirmPassword) {
+    redirect(`${errorPath}?error=${encodeURIComponent("Passwords do not match.")}`);
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
