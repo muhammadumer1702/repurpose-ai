@@ -38,12 +38,6 @@ export function SignupForm() {
     // Let the form submit to the server action naturally
   };
 
-  const getFeedbackIcon = (isValid: boolean) => {
-    if (password.length === 0) return <span className="ml-1 mr-1 text-lg leading-none">•</span>;
-    if (isValid) return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
-    return <XCircle className="h-4 w-4 text-destructive" />;
-  };
-
   const getFeedbackColor = (isValid: boolean) => {
     if (password.length === 0) return "text-muted-foreground";
     if (isValid) return "text-emerald-500";
