@@ -36,8 +36,8 @@ export async function signUpWithPassword(formData: FormData) {
     redirect(`${errorPath}?error=${encodeURIComponent("Password must be at least 8 characters long.")}`);
   }
 
-  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-    redirect(`${errorPath}?error=${encodeURIComponent("Password must contain at least one letter and one number.")}`);
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    redirect(`${errorPath}?error=${encodeURIComponent("Password must contain at least one uppercase letter, one lowercase letter, and one number.")}`);
   }
 
   if (password !== confirmPassword) {

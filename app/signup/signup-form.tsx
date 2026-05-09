@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 
 import { signUpWithPassword } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,19 @@ export function SignupForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  // Validation rules
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     // Frontend validation
-    if (password.length < 8) {
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasNumber) {
       e.preventDefault();
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
-    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      e.preventDefault();
-      setError("Password must contain at least one letter and one number.");
+      setError("Please meet all password requirements.");
       return;
     }
     if (password !== confirmPassword) {
@@ -34,6 +36,18 @@ export function SignupForm() {
     
     setError(null);
     // Let the form submit to the server action naturally
+  };
+
+  const getFeedbackIcon = (isValid: boolean) => {
+    if (password.length === 0) return <span className="ml-1 mr-1 text-lg leading-none">•</span>;
+    if (isValid) return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+    return <XCircle className="h-4 w-4 text-destructive" />;
+  };
+
+  const getFeedbackColor = (isValid: boolean) => {
+    if (password.length === 0) return "text-muted-foreground";
+    if (isValid) return "text-emerald-500";
+    return "text-destructive";
   };
 
   return (
@@ -60,8 +74,34 @@ export function SignupForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
       <div className="space-y-2">
         <Label htmlFor="signup-password">Password</Label>
+        
+        {(passwordFocused || password.length > 0) && (
+          <div className="rounded-md border border-border/50 bg-muted/30 p-4 text-sm animate-in fade-in slide-in-from-top-1">
+            <p className="font-medium mb-3">Password Requirements:</p>
+            <ul className="space-y-2">
+              <li className={`flex items-center gap-2 ${getFeedbackColor(hasMinLength)}`}>
+                <span className="text-lg leading-none">•</span>
+                <span>At least 8 characters</span>
+              </li>
+              <li className={`flex items-center gap-2 ${getFeedbackColor(hasUppercase)}`}>
+                <span className="text-lg leading-none">•</span>
+                <span>At least 1 uppercase letter (A-Z)</span>
+              </li>
+              <li className={`flex items-center gap-2 ${getFeedbackColor(hasLowercase)}`}>
+                <span className="text-lg leading-none">•</span>
+                <span>At least 1 lowercase letter (a-z)</span>
+              </li>
+              <li className={`flex items-center gap-2 ${getFeedbackColor(hasNumber)}`}>
+                <span className="text-lg leading-none">•</span>
+                <span>At least 1 number (0-9)</span>
+              </li>
+            </ul>
+          </div>
+        )}
+
         <Input
           id="signup-password"
           name="password"
@@ -69,12 +109,14 @@ export function SignupForm() {
           autoComplete="new-password"
           required
           minLength={8}
-          placeholder="At least 8 characters, 1 letter & 1 number"
+          placeholder="Enter a strong password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
             if (error) setError(null);
           }}
+          onFocus={() => setPasswordFocused(true)}
+          onBlur={() => setPasswordFocused(false)}
         />
       </div>
       <div className="space-y-2">
