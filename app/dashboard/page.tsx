@@ -38,17 +38,28 @@ export default async function DashboardPage() {
 
   const email = user?.email ?? "there";
 
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  nextMonth.setDate(1);
+  const refreshDate = nextMonth.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
   return (
     <section className="container max-w-3xl py-12 md:py-16">
       <Card className="border-border/60 shadow-sm">
         <CardHeader className="space-y-2 pb-2">
           <CardTitle className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Welcome back, {email}! You're in the Beta!
+            Welcome to Beta! 🎉
           </CardTitle>
           <CardDescription>
-            Your workspace · Dashboard
+            {email} · Dashboard
             <br />
-            You have used {generationsUsed} out of 5 free generations this month.
+            You have used {generationsUsed} out of 10 free generations this month.
+            {generationsUsed >= 10 && (
+              <span className="mt-2 block font-medium text-destructive">
+                You've reached your free limit of 10 generations this month.<br />
+                Your limit will refresh on {refreshDate}.
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 pt-6">

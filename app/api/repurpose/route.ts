@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { YoutubeTranscript } from 'youtube-transcript';
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -17,6 +18,7 @@ type EmailSequenceEmail = {
 };
 
 type RepurposeOutputs = {
+  internalSummary?: string;
   linkedinCarousel: CarouselSlide[];
   twitterThread: string;
   emailSequence: EmailSequenceEmail[];
@@ -108,18 +110,24 @@ async function generateRepurposedOutputs(transcript: string, voiceProfile: strin
     input: [
       {
         role: "system",
-        content: `You are an elite, world-class copywriter who commands $5k+ per project, specializing exclusively in thought leadership for 6-7 figure consultants and coaches. Your mission is to generate the absolute highest-converting, premium, market-ready content that clients happily pay thousands for.
+        content: `You are an elite, world-class copywriter who commands top rates. Your mission is to generate the absolute highest-converting, premium, market-ready content.
+
+*** ABSOLUTE RULE (TOP PRIORITY) ***
+First, transcribe and deeply understand the source content (especially YouTube videos). The main topic and key messages from the source MUST be the foundation of ALL outputs. Never override the source topic. If the video is about sleep science, all outputs must be about sleep science. Do not turn it into general motivation, consulting, or high-ticket sales content.
+
+*** BRAND VOICE LIMITATIONS ***
+Brand voice should ONLY influence tone, phrasing, and style — NEVER the core subject or key points.
 
 CORE STYLE & STANDARDS (APPLY TO ALL OUTPUTS):
-- Tone: Bold, authoritative, insightful, and slightly provocative. You are a sought-after expert, not a generic instructor.
+- Tone: Bold, authoritative, insightful, and slightly provocative.
 - Hooks & Titles: Extremely magnetic, curiosity-driven, and designed to stop the scroll immediately.
-- Structure: Zero generic bullets. Use powerful, flowing paragraphs and natural storytelling that grounds concepts in specific, high-ticket outcomes (e.g., "$25k consulting retainers", "closing enterprise deals").
+- Structure: Zero generic bullets. Use powerful, flowing paragraphs and natural storytelling.
 - Language: 100% human, expert-crafted feel. ZERO generic AI language. Banned words: "In today's digital age", "Unlock your potential", "Game-changer", "Delve", "Supercharge", "Elevate", "Landscape".
 - CTAs: Strong, natural, benefit-rich, and emotional. Create intense, undeniable desire.
-- Voice: Strictly adhere to the provided brand voice profile.
 
 You MUST return a valid JSON object with this exact structure:
 {
+  "internalSummary": "First, deeply analyze and write a short summary of the source content. Identify the core topic, key messages, and exact tone. Base ALL subsequent outputs STRICTLY on this summary.",
   "linkedinCarousel": [
     {
       "slideNumber": 1,
@@ -187,6 +195,7 @@ ${transcript}`
           type: "object",
           additionalProperties: false,
           properties: {
+            internalSummary: { type: "string" },
             linkedinCarousel: {
               type: "array",
               items: {
@@ -220,6 +229,7 @@ ${transcript}`
             instagramThreadsCaptions: { type: "string" }
           },
           required: [
+            "internalSummary",
             "linkedinCarousel",
             "twitterThread",
             "emailSequence",
@@ -236,6 +246,7 @@ ${transcript}`
 
   // Ensure linkedinCarousel and emailSequence are always arrays
   const outputs: RepurposeOutputs = {
+    internalSummary: parsed.internalSummary ?? "",
     linkedinCarousel: Array.isArray(parsed.linkedinCarousel) ? parsed.linkedinCarousel : [],
     twitterThread: parsed.twitterThread ?? "",
     emailSequence: Array.isArray(parsed.emailSequence) ? parsed.emailSequence : [],
@@ -275,9 +286,14 @@ export async function POST(request: Request) {
     const tier = profile?.tier || "beta_free";
     const generationsUsed = profile?.generations_used || 0;
 
-    if (tier === "beta_free" && generationsUsed >= 5) {
+    if (tier === "beta_free" && generationsUsed >= 10) {
+      const nextMonth = new Date();
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      nextMonth.setDate(1);
+      const refreshDate = nextMonth.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
       return NextResponse.json(
-        { error: "You've reached your free limit of 5 generations this month. Please upgrade your plan to continue." },
+        { error: `You've reached your free limit of 10 generations this month. Your limit will refresh on ${refreshDate}.` },
         { status: 403 }
       );
     }
@@ -299,8 +315,16 @@ export async function POST(request: Request) {
       sourceTranscript = rawText;
       sourceType = "raw_text";
     } else if (youtubeLink) {
-      sourceTranscript = `Source URL: ${youtubeLink}`;
-      sourceType = "youtube_link";
+      try {
+        const transcriptArr = await YoutubeTranscript.fetchTranscript(youtubeLink);
+        const text = transcriptArr.map(t => t.text).join(' ');
+        sourceTranscript = `Source URL: ${youtubeLink}\n\nTranscript: ${text}`;
+        sourceType = "youtube_link";
+      } catch (err) {
+        console.error("Failed to fetch YouTube transcript:", err);
+        sourceTranscript = `Source URL: ${youtubeLink}\n\n(Transcript could not be fetched. Do your best to infer from the title/URL, but stick strictly to the topic.)`;
+        sourceType = "youtube_link";
+      }
     } else {
       return NextResponse.json(
         { error: "Provide at least one source input: YouTube link, file upload, or raw text." },
