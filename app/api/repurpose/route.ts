@@ -275,7 +275,7 @@ export async function POST(request: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("generations_used, tier")
+      .select("generations_used, tier, last_reset_date")
       .eq("id", user.id)
       .single();
 
@@ -284,7 +284,15 @@ export async function POST(request: Request) {
     }
 
     const tier = profile?.tier || "beta_free";
-    const generationsUsed = profile?.generations_used || 0;
+    let generationsUsed = profile?.generations_used || 0;
+
+    if (profile?.last_reset_date) {
+      const lastResetDate = new Date(profile.last_reset_date);
+      const now = new Date();
+      if (lastResetDate.getMonth() !== now.getMonth() || lastResetDate.getFullYear() !== now.getFullYear()) {
+        generationsUsed = 0;
+      }
+    }
 
     if (tier === "beta_free" && generationsUsed >= 10) {
       const nextMonth = new Date();
@@ -370,9 +378,7 @@ export async function POST(request: Request) {
 
     // Increment usage
     const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ generations_used: generationsUsed + 1 })
-      .eq("id", user.id);
+      .rpc("increment_generations_used", { user_id: user.id });
 
     if (updateError) {
       console.error("Failed to update generations_used:", updateError.message);

@@ -27,12 +27,20 @@ export default async function DashboardPage() {
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("generations_used")
+      .select("generations_used, last_reset_date")
       .eq("id", user.id)
       .single();
     
     if (profile) {
       generationsUsed = profile.generations_used;
+      
+      if (profile.last_reset_date) {
+        const lastResetDate = new Date(profile.last_reset_date);
+        const now = new Date();
+        if (lastResetDate.getMonth() !== now.getMonth() || lastResetDate.getFullYear() !== now.getFullYear()) {
+          generationsUsed = 0;
+        }
+      }
     }
   }
 
