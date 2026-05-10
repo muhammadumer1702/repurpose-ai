@@ -52,7 +52,7 @@ const loadingSteps = ["Transcribing", "Voice Analysis", "Generating Assets"];
 
 // No parseLinkedInSlides needed — the API now returns structured slide objects
 
-export function NewRepurposeClient() {
+export function NewRepurposeClient({ generationsUsed = 0 }: { generationsUsed?: number }) {
   const [youtubeLink, setYoutubeLink] = useState("");
   const [rawText, setRawText] = useState("");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -407,6 +407,10 @@ export function NewRepurposeClient() {
         <p className="text-muted-foreground">
           Upload source content, lock your brand voice, and generate platform-ready assets.
         </p>
+      </div>
+
+      <div className="mb-6 rounded-lg bg-primary/10 px-4 py-3 text-sm font-medium text-primary">
+        You have {Math.max(0, 10 - generationsUsed)} generations left this month.
       </div>
 
       <div className="space-y-6">

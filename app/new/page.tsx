@@ -5,11 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function NewRepurposePage() {
   const supabase = await createClient();
+  let user = null;
 
   try {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
 
     if (!user) {
       redirect("/login?next=/new");
@@ -19,5 +19,19 @@ export default async function NewRepurposePage() {
     redirect("/login");
   }
 
-  return <NewRepurposeClient />;
+  let generationsUsed = 0;
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("generations_used")
+      .eq("id", user.id)
+      .single();
+    
+    if (profile) {
+      generationsUsed = profile.generations_used;
+    }
+  }
+
+  return <NewRepurposeClient generationsUsed={generationsUsed} />;
 }

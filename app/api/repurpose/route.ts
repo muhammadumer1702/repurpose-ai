@@ -275,7 +275,7 @@ export async function POST(request: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("generations_used, tier")
+      .select("generations_used")
       .eq("id", user.id)
       .single();
 
@@ -283,10 +283,9 @@ export async function POST(request: Request) {
       console.error("Error fetching profile:", profileError.message);
     }
 
-    const tier = profile?.tier || "beta_free";
     let generationsUsed = profile?.generations_used || 0;
 
-    if (tier === "beta_free" && generationsUsed >= 10) {
+    if (generationsUsed >= 10) {
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       nextMonth.setDate(1);
@@ -375,7 +374,6 @@ export async function POST(request: Request) {
       .upsert({ 
         id: user.id, 
         generations_used: generationsUsed + 1,
-        tier: tier,
         updated_at: now
       }, { onConflict: 'id' });
 
