@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 import { signUpWithPassword } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";

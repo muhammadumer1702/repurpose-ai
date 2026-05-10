@@ -64,7 +64,7 @@ export default async function DashboardPage() {
             You have used {generationsUsed} out of 10 free generations this month.
             {generationsUsed >= 10 && (
               <span className="mt-2 block font-medium text-destructive">
-                You've reached your free limit of 10 generations this month.<br />
+                You&apos;ve reached your free limit of 10 generations this month.<br />
                 Your limit will refresh on {refreshDate}.
               </span>
             )}
