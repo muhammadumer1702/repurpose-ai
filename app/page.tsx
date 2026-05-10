@@ -41,7 +41,7 @@ export default async function HomePage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               <Button size="lg" className="h-12 w-full sm:w-auto px-8 shadow-md text-base" asChild>
                 <Link href="/signup">
-                  Join Beta
+                  Join Free Beta
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>

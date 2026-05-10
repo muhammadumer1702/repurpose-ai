@@ -46,7 +46,7 @@ export async function signUpWithPassword(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -55,7 +55,14 @@ export async function signUpWithPassword(formData: FormData) {
   });
 
   if (error) {
+    if (error.message.toLowerCase().includes("user already registered")) {
+      redirect(`${errorPath}?error=UserAlreadyExists`);
+    }
     redirect(`${errorPath}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (data?.user && data.user.identities && data.user.identities.length === 0) {
+    redirect(`${errorPath}?error=UserAlreadyExists`);
   }
 
   redirect("/login?message=Check your inbox to confirm your account.");

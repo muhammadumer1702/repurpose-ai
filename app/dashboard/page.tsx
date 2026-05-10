@@ -22,16 +22,34 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const email = user.email ?? "there";
+  let generationsUsed = 0;
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("generations_used")
+      .eq("id", user.id)
+      .single();
+    
+    if (profile) {
+      generationsUsed = profile.generations_used;
+    }
+  }
+
+  const email = user?.email ?? "there";
 
   return (
     <section className="container max-w-3xl py-12 md:py-16">
       <Card className="border-border/60 shadow-sm">
         <CardHeader className="space-y-2 pb-2">
           <CardTitle className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Welcome back, {email}!
+            Welcome back, {email}! You're in the Beta!
           </CardTitle>
-          <CardDescription>Your workspace · Dashboard</CardDescription>
+          <CardDescription>
+            Your workspace · Dashboard
+            <br />
+            You have used {generationsUsed} out of 5 free generations this month.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 pt-6">
           <p className="text-muted-foreground">

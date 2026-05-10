@@ -262,6 +262,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("generations_used, tier")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') { // Ignore row not found error
+      console.error("Error fetching profile:", profileError.message);
+    }
+
+    const tier = profile?.tier || "beta_free";
+    const generationsUsed = profile?.generations_used || 0;
+
+    if (tier === "beta_free" && generationsUsed >= 5) {
+      return NextResponse.json(
+        { error: "You've reached your free limit of 5 generations this month. Please upgrade your plan to continue." },
+        { status: 403 }
+      );
+    }
+
     const formData = await request.formData();
     const youtubeLink = String(formData.get("youtubeLink") ?? "").trim();
     const rawText = String(formData.get("rawText") ?? "").trim();
@@ -322,6 +342,16 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error("Failed to save repurpose history:", insertError.message);
+    }
+
+    // Increment usage
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ generations_used: generationsUsed + 1 })
+      .eq("id", user.id);
+
+    if (updateError) {
+      console.error("Failed to update generations_used:", updateError.message);
     }
 
     return NextResponse.json({

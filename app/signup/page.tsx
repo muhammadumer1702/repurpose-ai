@@ -39,7 +39,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {error ? (
+          {error === "UserAlreadyExists" ? (
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <p>
+                An account with this email already exists.{" "}
+                <Link href="/login" className="font-medium underline underline-offset-4">
+                  Please sign in instead.
+                </Link>
+              </p>
+            </div>
+          ) : error ? (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <p>{error}</p>
