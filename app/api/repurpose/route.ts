@@ -283,7 +283,7 @@ export async function POST(request: Request) {
       console.error("Error fetching profile:", profileError.message);
     }
 
-    let generationsUsed = profile?.generations_used || 0;
+    const generationsUsed = profile?.generations_used || 0;
 
     if (generationsUsed >= 10) {
       const nextMonth = new Date();
@@ -371,8 +371,8 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const { error: updateError } = await supabase
       .from("profiles")
-      .upsert({ 
-        id: user.id, 
+      .upsert({
+        id: user.id,
         generations_used: generationsUsed + 1,
         updated_at: now
       }, { onConflict: 'id' });
