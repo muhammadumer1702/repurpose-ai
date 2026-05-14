@@ -269,6 +269,8 @@ export async function POST(request: Request) {
       data: { user }
     } = await supabase.auth.getUser();
 
+    console.log("=== GENERATION STARTED for user:", user?.id);
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
@@ -279,11 +281,14 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
+    console.log("Profile fetched:", profile, profileError?.message || "No error");
+
     if (profileError && profileError.code !== 'PGRST116') { // Ignore row not found error
       console.error("Error fetching profile:", profileError.message);
     }
 
     const generationsUsed = profile?.generations_used || 0;
+    console.log("Current generationsUsed for user:", generationsUsed);
 
     if (generationsUsed >= 10) {
       const nextMonth = new Date();
@@ -331,6 +336,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("Source transcript extracted. Length:", sourceTranscript?.length);
+
     const voiceChunks: string[] = [];
     if (voiceText) {
       voiceChunks.push(voiceText);
@@ -353,8 +360,14 @@ export async function POST(request: Request) {
     }
 
     const voiceProfile = await buildVoiceProfile(voiceChunks.join("\n\n---\n\n"));
+    console.log("Voice profile built. Length:", voiceProfile?.length);
+    
+    console.log("Source transcript length:", sourceTranscript?.length);
+    console.log("Calling generateRepurposedOutputs...");
     const outputs = await generateRepurposedOutputs(sourceTranscript, voiceProfile);
+    console.log("Generation succeeded. Output keys:", Object.keys(outputs));
 
+    console.log("Inserting into repurpose_history...");
     const { error: insertError } = await supabase.from("repurpose_history").insert({
       user_id: user.id,
       source_type: sourceType,
@@ -363,11 +376,14 @@ export async function POST(request: Request) {
       outputs
     });
 
+    console.log("History insert:", insertError ? "FAILED: " + insertError.message : "SUCCESS");
+
     if (insertError) {
       console.error("Failed to save repurpose history:", insertError.message);
     }
 
     // Increment usage
+    console.log("Before updating generations_used, current count:", generationsUsed);
     const newCount = generationsUsed + 1;
     const now = new Date().toISOString();
 
@@ -380,11 +396,14 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .select();
 
+    console.log("After updating generations_used. Result:", updateError ? "FAILED" : "SUCCESS", updateError?.message || "");
+
     if (updateError) {
       console.error("[Repurpose API] Failed to update generations_used:", updateError.message);
     } else if (updatedProfile && updatedProfile.length === 0) {
       // Profile doesn't exist, try to insert
-      const { error: insertError } = await supabase
+      console.log("Profile update returned 0 rows. Attempting to insert...");
+      const { error: insertProfileError } = await supabase
         .from("profiles")
         .insert({
           id: user.id,
@@ -393,8 +412,10 @@ export async function POST(request: Request) {
           updated_at: now
         });
 
-      if (insertError) {
-        console.error("[Repurpose API] Failed to create profile:", insertError.message);
+      console.log("Profile insert fallback result:", insertProfileError ? "FAILED" : "SUCCESS", insertProfileError?.message || "");
+
+      if (insertProfileError) {
+        console.error("[Repurpose API] Failed to create profile:", insertProfileError.message);
       } else {
         console.log(`Usage updated for user ${user.id}: ${newCount} generations`);
       }
