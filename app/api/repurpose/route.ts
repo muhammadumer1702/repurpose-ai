@@ -368,17 +368,15 @@ export async function POST(request: Request) {
     }
 
     // Increment usage
-    const now = new Date().toISOString();
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        generations_used: generationsUsed + 1,
-        updated_at: now
-      }, { onConflict: 'id' });
+    console.log(`[Repurpose API] Incrementing usage for user ${user.id} using RPC...`);
+    const { error: updateError } = await supabase.rpc('increment_generations_used', {
+      user_id: user.id
+    });
 
     if (updateError) {
-      console.error("Failed to update generations_used:", updateError.message);
+      console.error("[Repurpose API] Failed to update generations_used:", updateError.message);
+    } else {
+      console.log(`[Repurpose API] Successfully incremented usage for user ${user.id}`);
     }
 
     return NextResponse.json({
