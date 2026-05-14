@@ -368,15 +368,38 @@ export async function POST(request: Request) {
     }
 
     // Increment usage
-    console.log(`[Repurpose API] Incrementing usage for user ${user.id} using RPC...`);
-    const { error: updateError } = await supabase.rpc('increment_generations_used', {
-      user_id: user.id
-    });
+    const newCount = generationsUsed + 1;
+    const now = new Date().toISOString();
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        generations_used: newCount,
+        updated_at: now
+      })
+      .eq("id", user.id)
+      .select();
 
     if (updateError) {
       console.error("[Repurpose API] Failed to update generations_used:", updateError.message);
+    } else if (updatedProfile && updatedProfile.length === 0) {
+      // Profile doesn't exist, try to insert
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          generations_used: newCount,
+          tier: "beta_free",
+          updated_at: now
+        });
+
+      if (insertError) {
+        console.error("[Repurpose API] Failed to create profile:", insertError.message);
+      } else {
+        console.log(`Usage updated for user ${user.id}: ${newCount} generations`);
+      }
     } else {
-      console.log(`[Repurpose API] Successfully incremented usage for user ${user.id}`);
+      console.log(`Usage updated for user ${user.id}: ${newCount} generations`);
     }
 
     return NextResponse.json({
